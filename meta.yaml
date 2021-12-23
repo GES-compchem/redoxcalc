@@ -1,5 +1,5 @@
 {% set name = "redoxcalc" %}
-{% set version = "0.1.0" %}
+{% set version = "0.1.1" %}
 
 package:
   name: "{{ name|lower }}"
@@ -17,9 +17,6 @@ requirements:
     - python>=3.8
   run:
     - python>=3.8
-    - rdkit
-    - jobdispatcher
-    - pickle
 
 about:
   license: UNKNOWN
