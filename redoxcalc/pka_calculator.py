@@ -121,9 +121,11 @@ class pKaCalculator:
             print(
                 f"WARNING: Cyclization spotted for {self.molecule}. Ignoring tautomer search.\n"
             )
-
+            
         else:
             shutil.copyfile("tautomers.xyz", "../" + self.molecule + "_taut.xyz")
+            os.remove("start_topo.out")
+            os.remove("tautomers_topo.out")
 
             self.path = self.workdir
             self.molecule = self.molecule + "_taut"
@@ -170,6 +172,34 @@ class pKaCalculator:
             print(
                 f"ERROR: {self.molecule} (charge {charge} uhf {spin}) has undergone dissociation.\n"
             )
+
+        # Looking for cyclization
+        os.system(
+            f"crest --testtopo {self.path}{self.molecule}.xyz > start_topo.out 2>> start_topo.out"
+        )
+        os.system(
+            f"crest --testtopo xtbopt.xyz > end_topo.out 2>> end_topo.out"
+        )
+        with open("start_topo.out", "r") as out:
+            start_rings = 0
+            for line in out:
+                if "Total number of rings in the system" in line:
+                    start_rings = int(line.split()[-1])
+                    break
+        with open("end_topo.out", "r") as out:
+            tautomer_rings = 0
+            for line in out:
+                if "Total number of rings in the system" in line:
+                    tautomer_rings = int(line.split()[-1])
+                    break
+
+        if start_rings < tautomer_rings:
+            print(
+                f"ERROR: Cyclization spotted for {self.molecule} during optimization. Please check the results!\n"
+            )
+        else:
+            os.remove("start_topo.out")
+            os.remove("end_topo.out")
 
         self.cleanup()
 
